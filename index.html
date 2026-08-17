@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Трекер · Вивчення англійської</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0D12;
+    --ink-soft:#5B6472;
+    --ink-faint:#98A1AD;
+    --blue:#2F6FED;
+    --blue-deep:#1B3FAE;
+    --blue-pastel:#DCE8FF;
+    --blue-pastel-2:#EEF4FF;
+    --border:#E7ECF3;
+    --bg-soft:#F7F9FC;
+  }
+  *{-webkit-tap-highlight-color:transparent;}
+  html,body{font-family:'Montserrat',sans-serif;color:var(--ink);background:#fff;}
+  .font-display{font-family:'Montserrat',sans-serif;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--blue-pastel);border-radius:99px;}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .fade-in{animation:fadeInUp .35s ease both;}
+  .card-hover{transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease;}
+  .card-hover:hover{box-shadow:0 12px 30px -12px rgba(15,30,80,.18); transform:translateY(-2px); border-color:var(--blue-pastel);}
+  .btn-press{transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;}
+  .btn-press:hover{transform:translateY(-1px) scale(1.025); box-shadow:0 8px 18px -10px rgba(27,63,174,.45);}
+  .btn-press:active{transform:scale(.97);}
+  .chip{transition:all .18s ease;}
+  .tab-underline{transition:all .25s cubic-bezier(.4,0,.2,1);}
+  .modal-backdrop{animation:fadeInUp .2s ease both;}
+  input:focus, textarea:focus, select:focus{outline:none; box-shadow:0 0 0 3px var(--blue-pastel); border-color:var(--blue);}
+  .ring-wrap{position:relative;width:104px;height:104px;border-radius:9999px;display:flex;align-items:center;justify-content:center;}
+  .scroll-thin{scrollbar-width:thin;}
+</style>
+</head>
+<body class="bg-white">
+<div id="app" class="min-h-screen pb-24"></div>
+
+<script>
+/* ============================= STATE ============================= */
+/* ============================= INLINE ICON SET =============================
+   Self-contained subset of Lucide icons (MIT licensed, https://lucide.dev),
+   embedded directly so the app never depends on an external CDN script. */
+const ICONS = {"languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "calendar": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" />", "settings-2": "<path d=\"M14 17H5\" /> <path d=\"M19 7h-9\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "book-open": "<path d=\"M12 5v16\" /> <path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\" />", "bar-chart-3": "<path d=\"M5 21v-6\" /> <path d=\"M12 21V3\" /> <path d=\"M19 21V9\" />", "link-2": "<path d=\"M9 17H7A5 5 0 0 1 7 7h2\" /> <path d=\"M15 7h2a5 5 0 1 1 0 10h-2\" /> <line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\" />", "plus-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M8 12h8\" /> <path d=\"M12 8v8\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "archive": "<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\" /> <path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\" /> <path d=\"M10 12h4\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "calendar-x": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"m14 13-4 4\" /> <path d=\"m10 13 4 4\" />", "calendar-check": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"m9 15 2 2 4-4\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 6v6l4 2\" />", "flame": "<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\" />", "trash-2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /> <path d=\"m21.854 2.147-10.94 10.939\" />", "heart": "<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\" />", "history": "<path d=\"M15 12h-5\" /> <path d=\"M15 8h-5\" /> <path d=\"M19 17V5a2 2 0 0 0-2-2H4\" /> <path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\" />", "globe-2": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\" /> <path d=\"M2 12h20\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "download": "<path d=\"M12 15V3\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <path d=\"m7 10 5 5 5-5\" />", "upload": "<path d=\"M12 3v12\" /> <path d=\"m17 8-5-5-5 5\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" />", "alert-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" /> <line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" />", "activity": "<path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\" />", "pie-chart": "<path d=\"M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z\" /> <path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />"}
+;
+
+function renderIcons(){
+  document.querySelectorAll('[data-lucide]').forEach(el=>{
+    const name = el.getAttribute('data-lucide');
+    const inner = ICONS[name];
+    if(!inner) return;
+    const svgEl = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svgEl.setAttribute('viewBox','0 0 24 24');
+    svgEl.setAttribute('fill','none');
+    svgEl.setAttribute('stroke','currentColor');
+    svgEl.setAttribute('stroke-width','2');
+    svgEl.setAttribute('stroke-linecap','round');
+    svgEl.setAttribute('stroke-linejoin','round');
+    const cls = el.getAttribute('class');
+    if(cls) svgEl.setAttribute('class', cls);
+    const sty = el.getAttribute('style');
+    if(sty) svgEl.setAttribute('style', sty);
+    svgEl.innerHTML = inner;
+    el.replaceWith(svgEl);
+  });
+}
+
+const STORAGE_KEY = 'duoEnglishState_v1';
+const LESSON_TYPES = ['Читання','Граматика','Вивчення слів','Аудіювання','Розмовна практика','Письмо'];
+const MONTHS_UA = ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'];
+const WEEKDAYS_UA = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
+
+function defaultState(){
+  return {
+    users: { me: 'Дана', friend: 'Вова' },
+    activeProfile: 'me',
+    lessons: [],
+    links: []
+  };
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed, {
+      users: Object.assign({me:'Дана',friend:'Вова'}, parsed.users||{}),
+      lessons: Array.isArray(parsed.lessons)?parsed.lessons:[],
+      links: Array.isArray(parsed.links)?parsed.links:[]
+    });
+  }catch(e){ return defaultState(); }
+}
+
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = loadState();
+
+/* ephemeral UI state (not persisted) */
+let ui = {
+  tab: 'tracker',
+  showArchive: false,
+  showModal: false,
+  formTypes: [],
+  formDate: todayISO(),
+  formDateText: null,
+  formUnit: 'min',
+  formDuration: '',
+  formActivity: '',
+  formTopic: '',
+  formNotes: '',
+  formErrors: {},
+  statsPeriod: 'all',
+  linkFormOpen: false,
+  toast: null
+};
+
+/* ============================= HELPERS ============================= */
+function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+function toLocalISO(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+function todayISO(){ return toLocalISO(new Date()); }
+function parseISO(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function fmtDate(s){ const d=parseISO(s); return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}`; }
+function fmtDateFull(s){ const d=parseISO(s); return `${WEEKDAYS_UA[d.getDay()]}, ${d.getDate()} ${MONTHS_UA[d.getMonth()]} ${d.getFullYear()}`; }
+function formatDMY(iso){
+  if(!iso) return '';
+  const d = parseISO(iso);
+  return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`;
+}
+function parseDMY(str){
+  if(!str) return null;
+  const m = str.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(!m) return null;
+  const dd = parseInt(m[1],10), mm = parseInt(m[2],10), yyyy = parseInt(m[3],10);
+  if(mm<1||mm>12||dd<1||dd>31||yyyy<1900) return null;
+  const d = new Date(yyyy, mm-1, dd);
+  if(d.getFullYear()!==yyyy || d.getMonth()!==mm-1 || d.getDate()!==dd) return null;
+  return toLocalISO(d);
+}
+function dayDiff(a,b){ return Math.round((parseISO(b)-parseISO(a))/86400000); }
+function minutesToLabel(min){
+  if(min<60) return `${min} хв`;
+  const h=Math.floor(min/60), m=min%60;
+  return m? `${h} год ${m} хв` : `${h} год`;
+}
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function ensureUrl(u){
+  if(!/^https?:\/\//i.test(u)) return 'https://'+u;
+  return u;
+}
+
+/* ============================= COMPUTED ============================= */
+function otherProfile(profile){ return profile==='me' ? 'friend' : 'me'; }
+
+function getProfileLessons(profile){
+  return state.lessons.filter(l=>l.owner===profile).sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt-a.createdAt);
+}
+
+function computeStats(profile){
+  const lessons = getProfileLessons(profile);
+  const dateSet = new Set(lessons.map(l=>l.date));
+  const activeDays = dateSet.size;
+  const totalMinutes = lessons.reduce((s,l)=>s+(l.durationMinutes||0),0);
+
+  let missedDays = 0, firstDate = null;
+  if(lessons.length){
+    firstDate = lessons.reduce((min,l)=> l.date<min?l.date:min, lessons[0].date);
+    const span = dayDiff(firstDate, todayISO()) + 1;
+    missedDays = Math.max(0, span - activeDays);
+  }
+
+  // streak: consecutive days ending today or yesterday
+  let streak = 0;
+  let cursor = new Date();
+  // if today has no entry, start checking from yesterday but don't break streak for "today not yet logged"
+  if(!dateSet.has(todayISO())) cursor.setDate(cursor.getDate()-1);
+  while(true){
+    const iso = toLocalISO(cursor);
+    if(dateSet.has(iso)){ streak++; cursor.setDate(cursor.getDate()-1); }
+    else break;
+  }
+
+  // last 7 days minutes
+  const last7 = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const iso = toLocalISO(d);
+    const mins = lessons.filter(l=>l.date===iso).reduce((s,l)=>s+(l.durationMinutes||0),0);
+    last7.push({ iso, label: WEEKDAYS_UA[d.getDay()], mins });
+  }
+  const thisWeekDays = last7.filter(d=>d.mins>0).length;
+
+  // type breakdown
+  const typeMinutes = {};
+  LESSON_TYPES.forEach(t=>typeMinutes[t]=0);
+  lessons.forEach(l=>{
+    (l.types||[]).forEach(t=>{ typeMinutes[t] = (typeMinutes[t]||0) + (l.durationMinutes||0); });
+  });
+
+  return { activeDays, totalMinutes, missedDays, streak, last7, thisWeekDays, typeMinutes, lessonsCount: lessons.length };
+}
+
+function computeStatsForPeriod(profile, days){
+  const lessons = getProfileLessons(profile);
+  const startDate = new Date(); startDate.setDate(startDate.getDate()-(days-1));
+  const startISO = toLocalISO(startDate);
+  const periodLessons = lessons.filter(l=> l.date >= startISO && l.date <= todayISO());
+
+  const dateSet = new Set(periodLessons.map(l=>l.date));
+  const activeDays = dateSet.size;
+  const totalMinutes = periodLessons.reduce((s,l)=>s+(l.durationMinutes||0),0);
+  const missedDays = Math.max(0, days - activeDays);
+
+  const typeMinutes = {};
+  LESSON_TYPES.forEach(t=>typeMinutes[t]=0);
+  periodLessons.forEach(l=>{
+    (l.types||[]).forEach(t=>{ typeMinutes[t] = (typeMinutes[t]||0) + (l.durationMinutes||0); });
+  });
+
+  // build chart buckets (max ~30 bars, so bucket size grows with period length)
+  // buckets are ordered newest → oldest, so the first (leftmost) point is always today
+  const bucketSize = Math.max(1, Math.ceil(days/30));
+  const buckets = [];
+  for(let i=0;i<=days-1;i+=bucketSize){
+    const bucketDays = [];
+    const highestOffset = Math.min(days-1, i+bucketSize-1);
+    for(let j=i;j<=highestOffset;j++){
+      const d = new Date(); d.setDate(d.getDate()-j);
+      bucketDays.push(d);
+    }
+    let mins = 0;
+    bucketDays.forEach(d=>{
+      const iso = toLocalISO(d);
+      mins += periodLessons.filter(l=>l.date===iso).reduce((s,l)=>s+(l.durationMinutes||0),0);
+    });
+    // bucketDays[0] is the most recent day in this bucket, last is the oldest
+    const newest = bucketDays[0], oldest = bucketDays[bucketDays.length-1];
+    const label = bucketSize===1
+      ? WEEKDAYS_UA[newest.getDay()]
+      : `${oldest.getDate()}–${newest.getDate()} ${MONTHS_UA[newest.getMonth()]}`;
+    buckets.push({ label, mins });
+  }
+
+  return { activeDays, totalMinutes, missedDays, typeMinutes, buckets, days };
+}
+
+/* ============================= RENDER ROOT ============================= */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = renderHeader() + renderTabs() + renderTabContent() + renderModal() + renderToast();
+  attachEvents();
+  renderIcons();
+}
+
+/* ---------- Header ---------- */
+function renderHeader(){
+  return `
+  <header class="sticky top-0 z-30 backdrop-blur" style="background:var(--ink)">
+    <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:rgba(255,255,255,.12)">
+          <i data-lucide="languages" class="w-5 h-5" style="color:#fff"></i>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-lg leading-none" style="color:#fff">ТРЕКЕР</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,.55)">Вивчення англійської</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 p-1 rounded-2xl" style="background:rgba(255,255,255,.1)">
+          ${['me','friend'].map(k=>`
+            <button data-action="set-profile" data-user="${k}"
+              class="btn-press px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${state.activeProfile===k? 'bg-white shadow-sm':''}"
+              style="color:${state.activeProfile===k? 'var(--ink)':'rgba(255,255,255,.7)'}">
+              ${state.activeProfile===k?'<span class="inline-block w-1.5 h-1.5 rounded-full mr-1.5" style="background:var(--blue)"></span>':''}${escapeHtml(state.users[k])}
+            </button>`).join('')}
+        </div>
+        <button data-action="open-modal" class="btn-press w-10 h-10 rounded-2xl flex items-center justify-center" style="background:rgba(255,255,255,.12)">
+          <i data-lucide="settings-2" class="w-5 h-5" style="color:#fff"></i>
+        </button>
+      </div>
+    </div>
+  </header>`;
+}
+
+/* ---------- Tabs ---------- */
+function renderTabs(){
+  const tabs = [
+    { id:'tracker', label:'Трекер занять', icon:'book-open' },
+    { id:'stats', label:'Статистика', icon:'bar-chart-3' },
+    { id:'links', label:'Корисні сайти', icon:'link-2' }
+  ];
+  return `
+  <nav class="max-w-5xl mx-auto px-5 pt-6">
+    <div class="flex items-center gap-2 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto" style="background:var(--bg-soft)">
+      ${tabs.map(t=>`
+        <button data-action="set-tab" data-tab="${t.id}" class="btn-press tab-underline flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap ${ui.tab===t.id?'bg-white shadow-sm':''}"
+          style="color:${ui.tab===t.id?'var(--blue-deep)':'var(--ink-soft)'}">
+          <i data-lucide="${t.icon}" class="w-4 h-4"></i>${t.label}
+        </button>`).join('')}
+    </div>
+  </nav>`;
+}
+
+function renderTabContent(){
+  if(ui.tab==='tracker') return renderTracker();
+  if(ui.tab==='stats') return renderStats();
+  return renderLinks();
+}
+
+/* ============================= TRACKER TAB ============================= */
+function renderTracker(){
+  const profile = state.activeProfile;
+  const all = getProfileLessons(profile);
+  const active = all.filter(l=>!l.archived);
+  const archived = all.filter(l=>l.archived);
+
+  return `
+  <section class="max-w-5xl mx-auto px-5 py-6 space-y-6">
+    ${renderAddForm()}
+
+    <div class="fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="history" class="w-5 h-5" style="color:var(--blue)"></i>Історія занять</h3>
+        <span class="text-xs px-2.5 py-1 rounded-full" style="background:var(--blue-pastel);color:var(--blue-deep)">${active.length}</span>
+      </div>
+
+      ${active.length===0 ? emptyState('calendar-x','Тут поки що порожньо','Додайте перше заняття вище — і воно з’явиться тут.') :
+        `<div class="grid sm:grid-cols-2 gap-4">${active.map(l=>lessonCard(l)).join('')}</div>`}
+    </div>
+
+    ${archived.length>0 ? `
+    <div class="pt-2">
+      <button data-action="toggle-archive" class="btn-press flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-2xl border w-full sm:w-auto justify-center sm:justify-start" style="border-color:var(--border);color:var(--ink-soft)">
+        <i data-lucide="archive" class="w-4 h-4"></i>
+        Архів занять
+        <span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--bg-soft)">${archived.length}</span>
+        <i data-lucide="chevron-${ui.showArchive?'up':'down'}" class="w-4 h-4 ml-1"></i>
+      </button>
+      ${ui.showArchive? `<div class="grid sm:grid-cols-2 gap-4 mt-4 fade-in">${archived.map(l=>lessonCard(l)).join('')}</div>` : ''}
+    </div>` : ''}
+  </section>`;
+}
+
+function typeChipSmall(t){
+  return `<span class="text-[11px] font-medium px-2 py-1 rounded-full" style="background:var(--blue-pastel-2);color:var(--blue-deep)">${escapeHtml(t)}</span>`;
+}
+
+function lessonCard(l){
+  return `
+  <div class="rounded-3xl border p-5 card-hover fade-in" style="border-color:var(--border)">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background:var(--bg-soft);color:var(--ink-soft)">${fmtDate(l.date)}</span>
+        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background:var(--blue-pastel);color:var(--blue-deep)">${minutesToLabel(l.durationMinutes)}</span>
+      </div>
+      <button data-action="toggle-archive-lesson" data-id="${l.id}" class="btn-press w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-50" title="${l.archived?'Повернути з архіву':'Архівувати'}">
+        <i data-lucide="${l.archived?'rotate-ccw':'archive'}" class="w-4 h-4" style="color:var(--ink-faint)"></i>
+      </button>
+    </div>
+    ${l.topic? `<h4 class="font-display font-bold mt-3 text-[15px]">${escapeHtml(l.topic)}</h4>`:''}
+    <div class="text-sm ${l.topic?'mt-0.5':'mt-3 font-display font-bold text-[15px]'}" style="color:${l.topic?'var(--ink-soft)':'var(--ink)'}">${escapeHtml(l.activity)}</div>
+    ${l.types && l.types.length? `<div class="flex flex-wrap gap-1.5 mt-3">${l.types.map(typeChipSmall).join('')}</div>`:''}
+    ${l.notes? `<p class="text-sm mt-3 pt-3 border-t leading-relaxed" style="border-color:var(--border);color:var(--ink-soft)">${escapeHtml(l.notes)}</p>`:''}
+
+    <div class="mt-3 pt-3 border-t" style="border-color:var(--border)">
+      ${(l.comments&&l.comments.length)? `
+      <div class="space-y-2 mb-2.5">
+        ${l.comments.map(c=>`
+          <div class="flex items-start gap-2 fade-in">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style="background:var(--blue)">${escapeHtml((state.users[c.author]||'?').charAt(0).toUpperCase())}</div>
+            <div class="text-xs rounded-2xl rounded-tl-sm px-3 py-2" style="background:var(--blue-pastel-2)">
+              <span class="font-semibold" style="color:var(--blue-deep)">${escapeHtml(state.users[c.author]||c.author)}</span>
+              <span style="color:var(--ink)"> ${escapeHtml(c.text)}</span>
+            </div>
+          </div>`).join('')}
+      </div>`:''}
+      <form data-comment-form data-id="${l.id}" data-owner="${l.owner}" class="flex items-center gap-2">
+        <i data-lucide="heart" class="w-4 h-4 shrink-0" style="color:var(--ink-faint)"></i>
+        <input type="text" name="comment" placeholder="Мотивашка від ${escapeHtml(state.users[otherProfile(l.owner)])}..." class="flex-1 min-w-0 px-3 py-2 rounded-xl border text-xs" style="border-color:var(--border)">
+        <button type="submit" class="btn-press w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background:var(--blue)">
+          <i data-lucide="send" class="w-3.5 h-3.5" style="color:#fff"></i>
+        </button>
+      </form>
+    </div>
+
+    <div class="flex justify-end mt-2">
+      <button data-action="delete-lesson" data-id="${l.id}" class="btn-press flex items-center gap-1 text-xs font-medium hover:underline" style="color:var(--ink-faint)"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Видалити</button>
+    </div>
+  </div>`;
+}
+
+function fieldErr(msg){
+  return `<span class="text-xs mt-1 flex items-center gap-1" style="color:#E0483E"><i data-lucide="alert-circle" class="w-3 h-3"></i>${msg}</span>`;
+}
+
+function renderAddForm(){
+  const err = ui.formErrors || {};
+  const errBorder = (key)=> err[key] ? 'border-color:#E0483E' : 'border-color:var(--border)';
+  return `
+  <div class="rounded-3xl border p-5 sm:p-6 fade-in" style="border-color:var(--border);background:var(--bg-soft)">
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="plus-circle" class="w-5 h-5" style="color:var(--blue)"></i>
+      <h3 class="font-display font-bold text-lg">Новий запис</h3>
+    </div>
+    <form id="lesson-form" class="space-y-4" novalidate>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Дата</label>
+          <div class="flex mt-1.5 gap-2">
+            <input type="text" inputmode="numeric" autocomplete="off" name="dateText" placeholder="ДД.ММ.РРРР" maxlength="10"
+              value="${escapeHtml(ui.formDateText!==null ? ui.formDateText : formatDMY(ui.formDate))}"
+              class="w-full px-4 py-2.5 rounded-2xl border bg-white text-sm" style="${errBorder('date')}">
+            <button type="button" data-action="open-date-picker" class="btn-press w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0" style="border-color:var(--border)">
+              <i data-lucide="calendar" class="w-4 h-4" style="color:var(--ink-soft)"></i>
+            </button>
+            <input type="date" id="hidden-date-picker" value="${ui.formDate}" max="${todayISO()}" class="sr-only" tabindex="-1" aria-hidden="true">
+          </div>
+          ${err.date? fieldErr('Формат: ДД.ММ.РРРР'):''}
+        </div>
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Тривалість</label>
+          <div class="flex mt-1.5 gap-2">
+            <input type="number" min="1" name="duration" value="${escapeHtml(ui.formDuration)}" placeholder="напр. 30"
+              class="w-full px-4 py-2.5 rounded-2xl border bg-white text-sm" style="${errBorder('duration')}">
+            <select name="unit" class="px-3 py-2.5 rounded-2xl border bg-white text-sm" style="border-color:var(--border)">
+              <option value="min" ${ui.formUnit==='min'?'selected':''}>хв</option>
+              <option value="hour" ${ui.formUnit==='hour'?'selected':''}>год</option>
+            </select>
+          </div>
+          ${err.duration? fieldErr('Вкажіть тривалість'):''}
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Тема уроку</label>
+        <input type="text" name="topic" value="${escapeHtml(ui.formTopic)}" placeholder="напр. Past Simple, тревел-лексика"
+          class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="border-color:var(--border)">
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Що робили</label>
+        <input type="text" name="activity" value="${escapeHtml(ui.formActivity)}" placeholder="напр. Читали статтю про подорожі"
+          class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="${errBorder('activity')}">
+        ${err.activity? fieldErr('Напишіть, що робили'):''}
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Тип уроку</label>
+        <div class="flex flex-wrap gap-2 mt-2">
+          ${LESSON_TYPES.map(t=>`
+            <button type="button" data-action="toggle-type" data-type="${t}"
+              class="chip btn-press px-3.5 py-2 rounded-2xl text-sm font-medium border"
+              style="${ui.formTypes.includes(t)? `background:var(--blue);color:#fff;border-color:var(--blue)`:`background:#fff;color:var(--ink-soft);border-color:var(--border)`}">
+              ${t}
+            </button>`).join('')}
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Нотатки та рефлексія</label>
+        <textarea name="notes" rows="2" placeholder="Що вийшло добре, що варто повторити..."
+          class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm resize-none" style="border-color:var(--border)">${escapeHtml(ui.formNotes)}</textarea>
+      </div>
+
+      <button type="submit" class="btn-press w-full sm:w-auto px-6 py-3 rounded-2xl font-semibold text-sm text-white flex items-center justify-center gap-2" style="background:var(--blue)">
+        <i data-lucide="plus" class="w-4 h-4"></i> Додати запис
+      </button>
+    </form>
+  </div>`;
+}
+
+/* ============================= STATS TAB ============================= */
+function statCard(icon,label,value,sub){
+  return `
+  <div class="rounded-3xl border p-5 card-hover fade-in" style="border-color:var(--border)">
+    <div class="w-10 h-10 rounded-2xl flex items-center justify-center mb-3" style="background:var(--blue-pastel)">
+      <i data-lucide="${icon}" class="w-5 h-5" style="color:var(--blue-deep)"></i>
+    </div>
+    <div class="font-display font-extrabold text-2xl">${value}</div>
+    <div class="text-sm font-medium mt-0.5">${label}</div>
+    ${sub? `<div class="text-xs mt-1" style="color:var(--ink-faint)">${sub}</div>`:''}
+  </div>`;
+}
+
+const STATS_PERIODS = [
+  { key: '7', label: '7 днів' },
+  { key: '30', label: '30 днів' },
+  { key: '100', label: '100 днів' },
+  { key: 'all', label: 'Весь період' }
+];
+
+function resolvePeriodDays(profile, key){
+  if(key !== 'all') return parseInt(key,10);
+  const lessons = getProfileLessons(profile);
+  if(!lessons.length) return 1;
+  const firstDate = lessons.reduce((min,l)=> l.date<min?l.date:min, lessons[0].date);
+  return Math.max(1, dayDiff(firstDate, todayISO()) + 1);
+}
+
+function periodSwitcher(){
+  return `
+  <div class="flex items-center gap-2 p-1.5 rounded-2xl w-full overflow-x-auto scroll-thin" style="background:var(--bg-soft)">
+    ${STATS_PERIODS.map(p=>`
+      <button data-action="set-stats-period" data-period="${p.key}"
+        class="btn-press px-3.5 py-2 rounded-xl text-sm font-semibold whitespace-nowrap shrink-0 ${ui.statsPeriod===p.key?'bg-white shadow-sm':''}"
+        style="color:${ui.statsPeriod===p.key?'var(--blue-deep)':'var(--ink-soft)'}">
+        ${p.label}
+      </button>`).join('')}
+  </div>`;
+}
+
+function renderStats(){
+  const profile = state.activeProfile;
+  const overall = computeStats(profile); // for lifetime lesson count + streak
+  const periodDays = resolvePeriodDays(profile, ui.statsPeriod);
+  const period = computeStatsForPeriod(profile, periodDays);
+  const maxType = Math.max(1, ...Object.values(period.typeMinutes));
+  const periodLabel = ui.statsPeriod==='all' ? `за весь період (${periodDays} дн.)` : `за останні ${periodDays} днів`;
+
+  return `
+  <section class="max-w-5xl mx-auto px-5 py-6 space-y-6">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <h2 class="font-display font-bold text-lg">Статистика — ${escapeHtml(state.users[profile])}</h2>
+      <span class="text-xs px-3 py-1.5 rounded-full" style="background:var(--bg-soft);color:var(--ink-soft)">Дані ${periodLabel}</span>
+    </div>
+
+    ${periodSwitcher()}
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      ${statCard('calendar-check','днів навчання', period.activeDays, `з ${overall.lessonsCount} записів усього`)}
+      ${statCard('clock','приділено часу', minutesToLabel(period.totalMinutes))}
+      ${statCard('calendar-x','днів пропущено', period.missedDays, periodLabel)}
+      ${statCard('flame','поточна серія', `${overall.streak} дн.`)}
+    </div>
+
+    <div class="rounded-3xl border p-5 sm:p-6 fade-in" style="border-color:var(--border)">
+      <h3 class="font-display font-bold text-lg mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5" style="color:var(--blue)"></i>Час за типом занять</h3>
+      <div class="space-y-3">
+        ${LESSON_TYPES.map(t=>`
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium" style="color:var(--ink-soft)">${t}</span>
+              <span style="color:var(--ink-faint)">${minutesToLabel(period.typeMinutes[t]||0)}</span>
+            </div>
+            <div class="h-2.5 rounded-full w-full" style="background:var(--bg-soft)">
+              <div class="h-2.5 rounded-full" style="width:${((period.typeMinutes[t]||0)/maxType)*100}%; background:var(--blue-pastel); box-shadow: inset 0 0 0 9999px var(--blue-pastel);"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================= LINKS TAB ============================= */
+function renderLinks(){
+  const links = [...state.links].sort((a,b)=>b.createdAt-a.createdAt);
+  return `
+  <section class="max-w-5xl mx-auto px-5 py-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="globe-2" class="w-5 h-5" style="color:var(--blue)"></i>Корисні сайти</h3>
+      <button data-action="toggle-link-form" class="btn-press flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-2xl text-white" style="background:var(--blue)">
+        <i data-lucide="${ui.linkFormOpen?'x':'plus'}" class="w-4 h-4"></i> ${ui.linkFormOpen?'Скасувати':'Додати сайт'}
+      </button>
+    </div>
+
+    ${ui.linkFormOpen? `
+    <form id="link-form" class="rounded-3xl border p-5 sm:p-6 space-y-4 fade-in" style="border-color:var(--border);background:var(--bg-soft)">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Назва сайту</label>
+          <input required name="title" type="text" placeholder="напр. BBC Learning English"
+            class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="border-color:var(--border)">
+        </div>
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Посилання</label>
+          <input required name="url" type="text" placeholder="https://..."
+            class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="border-color:var(--border)">
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Коротка помітка</label>
+        <input name="note" type="text" placeholder="Чому це корисно"
+          class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="border-color:var(--border)">
+      </div>
+      <button type="submit" class="btn-press flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white" style="background:var(--blue)"><i data-lucide="check" class="w-4 h-4"></i>Зберегти сайт</button>
+    </form>` : ''}
+
+    ${links.length===0? emptyState('link-2','Ще немає посилань','Додайте перший корисний сайт, яким хочете поділитися.') : `
+    <div class="grid sm:grid-cols-2 gap-4">
+      ${links.map(link=>`
+        <div class="rounded-3xl border p-5 card-hover fade-in" style="border-color:var(--border)">
+          <div class="flex items-start justify-between gap-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:var(--blue-pastel)">
+              <i data-lucide="external-link" class="w-4 h-4" style="color:var(--blue-deep)"></i>
+            </div>
+            <button data-action="delete-link" data-id="${link.id}" class="btn-press w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-50">
+              <i data-lucide="trash-2" class="w-4 h-4" style="color:var(--ink-faint)"></i>
+            </button>
+          </div>
+          <a href="${escapeHtml(ensureUrl(link.url))}" target="_blank" rel="noopener" class="font-display font-bold mt-3 block hover:underline">${escapeHtml(link.title)}</a>
+          ${link.note? `<p class="text-sm mt-1" style="color:var(--ink-soft)">${escapeHtml(link.note)}</p>`:''}
+          <div class="flex items-center justify-between mt-3 pt-3 border-t" style="border-color:var(--border)">
+            <span class="text-xs truncate max-w-[65%]" style="color:var(--ink-faint)">${escapeHtml(link.url)}</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:var(--bg-soft);color:var(--ink-soft)">додав ${escapeHtml(state.users[link.addedBy]||'—')}</span>
+          </div>
+        </div>`).join('')}
+    </div>`}
+  </section>`;
+}
+
+/* ---------- Empty state ---------- */
+function emptyState(icon,title,sub){
+  return `
+  <div class="rounded-3xl border border-dashed p-10 text-center" style="border-color:var(--border)">
+    <div class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center mb-3" style="background:var(--bg-soft)">
+      <i data-lucide="${icon}" class="w-5 h-5" style="color:var(--ink-faint)"></i>
+    </div>
+    <div class="font-display font-bold">${title}</div>
+    <div class="text-sm mt-1" style="color:var(--ink-soft)">${sub}</div>
+  </div>`;
+}
+
+/* ============================= MODAL (settings/data) ============================= */
+function renderModal(){
+  if(!ui.showModal) return '';
+  return `
+  <div class="fixed inset-0 z-40 flex items-end sm:items-center justify-center modal-backdrop" style="background:rgba(11,13,18,.45)" data-action="close-modal-backdrop">
+    <div class="bg-white w-full sm:w-[440px] sm:rounded-3xl rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto scroll-thin" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="settings-2" class="w-5 h-5" style="color:var(--blue)"></i>Налаштування та дані</h3>
+        <button data-action="close-modal" class="btn-press w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-50">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Ваше ім'я</label>
+          <input id="name-me" type="text" value="${escapeHtml(state.users.me)}" class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border text-sm" style="border-color:var(--border)">
+        </div>
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Ім'я друга/подруги</label>
+          <input id="name-friend" type="text" value="${escapeHtml(state.users.friend)}" class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border text-sm" style="border-color:var(--border)">
+        </div>
+        <button data-action="save-names" class="btn-press w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl font-semibold text-sm text-white" style="background:var(--blue)"><i data-lucide="check" class="w-4 h-4"></i>Зберегти імена</button>
+      </div>
+
+      <div class="h-px my-5" style="background:var(--border)"></div>
+
+      <div class="space-y-3">
+        <button data-action="export-data" class="btn-press w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl font-semibold text-sm border" style="border-color:var(--border)">
+          <i data-lucide="download" class="w-4 h-4"></i> Експортувати дані у JSON
+        </button>
+        <label class="btn-press w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl font-semibold text-sm border cursor-pointer" style="border-color:var(--border)">
+          <i data-lucide="upload" class="w-4 h-4"></i> Імпортувати дані з JSON
+          <input id="import-input" type="file" accept="application/json" class="hidden">
+        </label>
+        <p class="text-xs text-center" style="color:var(--ink-faint)">Дані зберігаються локально у вашому браузері.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderToast(){
+  if(!ui.toast) return '';
+  return `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 fade-in px-5 py-3 rounded-2xl text-sm font-medium text-white shadow-lg" style="background:var(--ink)">${escapeHtml(ui.toast)}</div>`;
+}
+
+function toast(msg){
+  ui.toast = msg;
+  render();
+  setTimeout(()=>{ ui.toast=null; render(); }, 2200);
+}
+
+/* ============================= EVENTS ============================= */
+function attachEvents(){
+  const app = document.getElementById('app');
+
+  app.querySelectorAll('[data-action]').forEach(el=>{
+    const action = el.getAttribute('data-action');
+    if(action==='close-modal-backdrop'){
+      el.addEventListener('click', ()=>{ ui.showModal=false; render(); });
+      return;
+    }
+    el.addEventListener('click', (e)=>{
+      switch(action){
+        case 'set-profile':
+          state.activeProfile = el.dataset.user; saveState(); render(); break;
+        case 'set-tab':
+          ui.tab = el.dataset.tab; ui.showArchive=false; render(); break;
+        case 'toggle-archive':
+          ui.showArchive = !ui.showArchive; render(); break;
+        case 'set-stats-period':
+          ui.statsPeriod = el.dataset.period; render(); break;
+        case 'toggle-archive-lesson': {
+          const l = state.lessons.find(x=>x.id===el.dataset.id);
+          if(l){ l.archived = !l.archived; saveState(); render(); }
+          break;
+        }
+        case 'delete-lesson':
+          if(confirm('Видалити цей запис назавжди?')){
+            state.lessons = state.lessons.filter(x=>x.id!==el.dataset.id);
+            saveState(); render();
+          }
+          break;
+        case 'toggle-type': {
+          const t = el.dataset.type;
+          ui.formTypes = ui.formTypes.includes(t) ? ui.formTypes.filter(x=>x!==t) : [...ui.formTypes, t];
+          render();
+          break;
+        }
+        case 'open-date-picker': {
+          const picker = document.getElementById('hidden-date-picker');
+          if(picker){
+            if(typeof picker.showPicker === 'function'){
+              try{ picker.showPicker(); } catch(err){ picker.focus(); picker.click(); }
+            } else {
+              picker.focus();
+              picker.click();
+            }
+          }
+          break;
+        }
+        case 'toggle-link-form':
+          ui.linkFormOpen = !ui.linkFormOpen; render(); break;
+        case 'delete-link':
+          if(confirm('Видалити це посилання?')){
+            state.links = state.links.filter(x=>x.id!==el.dataset.id);
+            saveState(); render();
+          }
+          break;
+        case 'open-modal':
+          ui.showModal = true; render(); break;
+        case 'close-modal':
+          ui.showModal = false; render(); break;
+        case 'save-names': {
+          const meVal = document.getElementById('name-me').value.trim();
+          const frVal = document.getElementById('name-friend').value.trim();
+          if(meVal) state.users.me = meVal;
+          if(frVal) state.users.friend = frVal;
+          saveState(); ui.showModal=false; render(); toast('Імена оновлено');
+          break;
+        }
+        case 'export-data': {
+          const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `duo-english-progress-${todayISO()}.json`;
+          document.body.appendChild(a); a.click(); a.remove();
+          toast('Дані експортовано');
+          break;
+        }
+      }
+    });
+  });
+
+  const importInput = document.getElementById('import-input');
+  if(importInput){
+    importInput.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        try{
+          const parsed = JSON.parse(ev.target.result);
+          state = Object.assign(defaultState(), parsed, {
+            users: Object.assign({me:'Дана',friend:'Вова'}, parsed.users||{}),
+            lessons: Array.isArray(parsed.lessons)?parsed.lessons:[],
+            links: Array.isArray(parsed.links)?parsed.links:[]
+          });
+          saveState(); ui.showModal=false; render(); toast('Дані імпортовано успішно');
+        }catch(err){
+          alert('Не вдалося прочитати файл. Перевірте формат JSON.');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  app.querySelectorAll('[data-comment-form]').forEach(form=>{
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const id = form.dataset.id;
+      const input = form.querySelector('input[name="comment"]');
+      const text = input.value.trim();
+      if(!text) return;
+      const l = state.lessons.find(x=>x.id===id);
+      if(l){
+        if(!l.comments) l.comments = [];
+        l.comments.push({ id: uid(), author: otherProfile(l.owner), text, createdAt: Date.now() });
+        saveState();
+        render();
+      }
+    });
+  });
+
+  const lessonForm = document.getElementById('lesson-form');
+  if(lessonForm){
+    const fDateText = lessonForm.querySelector('[name="dateText"]');
+    const fDatePicker = document.getElementById('hidden-date-picker');
+    const fDuration = lessonForm.querySelector('[name="duration"]');
+    const fUnit = lessonForm.querySelector('[name="unit"]');
+    const fActivity = lessonForm.querySelector('[name="activity"]');
+    const fTopic = lessonForm.querySelector('[name="topic"]');
+    const fNotes = lessonForm.querySelector('[name="notes"]');
+
+    fDateText.addEventListener('input', e=>{ ui.formDateText = e.target.value; });
+    fDuration.addEventListener('input', e=>{ ui.formDuration = e.target.value; });
+    fUnit.addEventListener('change', e=>{ ui.formUnit = e.target.value; });
+    fActivity.addEventListener('input', e=>{ ui.formActivity = e.target.value; });
+    fTopic.addEventListener('input', e=>{ ui.formTopic = e.target.value; });
+    fNotes.addEventListener('input', e=>{ ui.formNotes = e.target.value; });
+
+    if(fDatePicker){
+      fDatePicker.addEventListener('change', e=>{
+        const iso = e.target.value;
+        if(iso){
+          ui.formDate = iso;
+          ui.formDateText = formatDMY(iso);
+          render();
+        }
+      });
+    }
+
+    lessonForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      // sync latest values in case a browser autofill skipped the input event
+      ui.formDateText = fDateText.value;
+      ui.formDuration = fDuration.value;
+      ui.formUnit = fUnit.value;
+      ui.formActivity = fActivity.value;
+      ui.formTopic = fTopic.value;
+      ui.formNotes = fNotes.value;
+
+      const parsedDate = parseDMY(ui.formDateText);
+
+      const errors = {};
+      if(!parsedDate) errors.date = true;
+      else if(parsedDate > todayISO()) errors.date = true;
+      if(!ui.formActivity || !ui.formActivity.trim()) errors.activity = true;
+      const durNum = parseInt(ui.formDuration,10);
+      if(!ui.formDuration || isNaN(durNum) || durNum<=0) errors.duration = true;
+
+      if(Object.keys(errors).length){
+        ui.formErrors = errors;
+        render();
+        toast('Заповніть позначені поля');
+        return;
+      }
+
+      let duration = durNum;
+      if(ui.formUnit==='hour') duration = duration*60;
+
+      state.lessons.push({
+        id: uid(),
+        owner: state.activeProfile,
+        date: parsedDate,
+        activity: ui.formActivity.trim(),
+        types: [...ui.formTypes],
+        durationMinutes: duration,
+        topic: (ui.formTopic||'').trim(),
+        notes: (ui.formNotes||'').trim(),
+        archived: false,
+        comments: [],
+        createdAt: Date.now()
+      });
+      saveState();
+      ui.formTypes = [];
+      ui.formDate = todayISO();
+      ui.formDateText = null;
+      ui.formUnit = 'min';
+      ui.formDuration = '';
+      ui.formActivity = '';
+      ui.formTopic = '';
+      ui.formNotes = '';
+      ui.formErrors = {};
+      render();
+      toast('Запис додано');
+    });
+  }
+
+  const linkForm = document.getElementById('link-form');
+  if(linkForm){
+    linkForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const fd = new FormData(linkForm);
+      state.links.push({
+        id: uid(),
+        title: fd.get('title').trim(),
+        url: fd.get('url').trim(),
+        note: (fd.get('note')||'').trim(),
+        addedBy: state.activeProfile,
+        createdAt: Date.now()
+      });
+      saveState();
+      ui.linkFormOpen = false;
+      render();
+      toast('Сайт додано');
+    });
+  }
+}
+
+/* ============================= INIT ============================= */
+render();
+</script>
+</body>
+</html>
