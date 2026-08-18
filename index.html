@@ -7,6 +7,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase (Realtime Database) — enables live sync between devices. See setup notes near FIREBASE_CONFIG below. -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <style>
   :root{
     --ink:#0B0D12;
@@ -76,6 +79,26 @@ const LESSON_TYPES = ['Читання','Граматика','Вивчення с
 const MONTHS_UA = ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'];
 const WEEKDAYS_UA = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
 
+/* ============================= CROSS-DEVICE SYNC (Firebase) =============================
+   Fill these in with YOUR OWN free Firebase project's config to make Дана and Вова see
+   each other's history live from any device. Steps: see the setup guide sent alongside
+   this file. Until you fill this in, the app works fine but only on this one device
+   (data stays in this browser's localStorage). */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAkcr8enJ6W99Hqdp51M_yquHiipGR4oUM",
+  authDomain: "english-tracker-123.firebaseapp.com",
+  databaseURL: "https://english-tracker-123-default-rtdb.firebaseio.com",
+  projectId: "english-tracker-123",
+  storageBucket: "english-tracker-123.firebasestorage.app",
+  messagingSenderId: "707043444802",
+  appId: "1:707043444802:web:654ceeebebb44555f985db"
+};
+const SYNC_ENABLED = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY"
+  && !FIREBASE_CONFIG.databaseURL.includes("YOUR_PROJECT")
+  && typeof firebase !== 'undefined';
+let syncDbRef = null;
+let syncStatus = SYNC_ENABLED ? 'connecting' : 'offline'; // 'connecting' | 'online' | 'offline' | 'error'
+
 function defaultState(){
   return {
     users: { me: 'Дана', friend: 'Вова' },
@@ -85,7 +108,7 @@ function defaultState(){
   };
 }
 
-function loadState(){
+function loadLocalCache(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return defaultState();
@@ -98,9 +121,72 @@ function loadState(){
   }catch(e){ return defaultState(); }
 }
 
-function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+/* Only users/lessons/links are shared across devices. activeProfile (which profile
+   THIS device is currently viewing) stays local on purpose — so opening the app on
+   Вова's computer doesn't force-switch what Дана sees on hers, and vice versa. */
+function persistLocalCache(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      users: state.users,
+      activeProfile: state.activeProfile,
+      lessons: state.lessons,
+      links: state.links
+    }));
+  }catch(e){ /* storage unavailable — ignore */ }
+}
 
-let state = loadState();
+function saveState(){
+  persistLocalCache();
+  if(SYNC_ENABLED && syncDbRef){
+    syncDbRef.set({
+      users: state.users,
+      lessons: state.lessons,
+      links: state.links
+    }).catch(err=>{
+      console.error('Sync write failed:', err);
+      syncStatus = 'error';
+      toast('Немає звʼязку із сервером — зміни збережено лише тут');
+      render();
+    });
+  }
+}
+
+function initSync(){
+  if(!SYNC_ENABLED){
+    state.loaded = true;
+    render();
+    return;
+  }
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    syncDbRef = firebase.database().ref('duoEnglishTracker');
+    syncDbRef.on('value', snapshot=>{
+      const remote = snapshot.val();
+      if(remote){
+        state.users = Object.assign({me:'Дана',friend:'Вова'}, remote.users||{});
+        state.lessons = Array.isArray(remote.lessons) ? remote.lessons : [];
+        state.links = Array.isArray(remote.links) ? remote.links : [];
+      }
+      state.loaded = true;
+      syncStatus = 'online';
+      persistLocalCache();
+      render();
+    }, err=>{
+      console.error('Sync read failed:', err);
+      syncStatus = 'error';
+      state.loaded = true; // fall back to local cache so the app is still usable
+      render();
+    });
+  }catch(e){
+    console.error('Firebase init failed:', e);
+    syncStatus = 'error';
+    state.loaded = true;
+    render();
+  }
+}
+
+let state = loadLocalCache();
+state.loaded = false; // becomes true once the initial sync read (or offline fallback) completes
 
 /* ephemeral UI state (not persisted) */
 let ui = {
@@ -256,9 +342,23 @@ function computeStatsForPeriod(profile, days){
 /* ============================= RENDER ROOT ============================= */
 function render(){
   const app = document.getElementById('app');
+  if(!state.loaded){
+    app.innerHTML = renderLoadingScreen();
+    return;
+  }
   app.innerHTML = renderHeader() + renderTabs() + renderTabContent() + renderModal() + renderToast();
   attachEvents();
   renderIcons();
+}
+
+function renderLoadingScreen(){
+  return `
+  <div class="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center">
+    <div class="w-10 h-10 rounded-2xl flex items-center justify-center animate-pulse" style="background:var(--blue-pastel)">
+      <div class="w-4 h-4 rounded-full" style="background:var(--blue)"></div>
+    </div>
+    <div class="font-display font-bold" style="color:var(--ink-soft)">Синхронізуємо дані…</div>
+  </div>`;
 }
 
 /* ---------- Header ---------- */
@@ -272,7 +372,13 @@ function renderHeader(){
         </div>
         <div>
           <div class="font-display font-extrabold text-lg leading-none" style="color:#fff">ТРЕКЕР</div>
-          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,.55)">Вивчення англійської</div>
+          <div class="text-xs mt-0.5 flex items-center gap-1.5" style="color:rgba(255,255,255,.55)">
+            Вивчення англійської
+            <span class="inline-flex items-center gap-1 ml-1">
+              <span class="w-1.5 h-1.5 rounded-full" style="background:${syncStatus==='online'?'#4ADE80':syncStatus==='error'?'#F87171':'#98A1AD'}"></span>
+              <span style="font-size:10px">${syncStatus==='online'?'синхронізовано':syncStatus==='error'?'немає звʼязку':'лише цей пристрій'}</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -658,6 +764,20 @@ function renderModal(){
 
       <div class="h-px my-5" style="background:var(--border)"></div>
 
+      <div class="rounded-2xl p-4" style="background:var(--bg-soft)">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full" style="background:${syncStatus==='online'?'#4ADE80':syncStatus==='error'?'#F87171':'#98A1AD'}"></span>
+          <span class="text-sm font-semibold">${syncStatus==='online'?'Синхронізація увімкнена':syncStatus==='error'?'Немає звʼязку з сервером':'Синхронізація не налаштована'}</span>
+        </div>
+        <p class="text-xs" style="color:var(--ink-soft)">
+          ${syncStatus==='online'
+            ? 'Записи, нотатки й посилання оновлюються на обох пристроях автоматично.'
+            : 'Зараз дані зберігаються лише в цьому браузері. Щоб Дана і Вова бачили історію одне одного з будь-якого пристрою, потрібно один раз підключити безкоштовну базу даних (Firebase) — інструкція була надіслана окремо.'}
+        </p>
+      </div>
+
+      <div class="h-px my-5" style="background:var(--border)"></div>
+
       <div class="space-y-3">
         <button data-action="export-data" class="btn-press w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl font-semibold text-sm border" style="border-color:var(--border)">
           <i data-lucide="download" class="w-4 h-4"></i> Експортувати дані у JSON
@@ -666,7 +786,7 @@ function renderModal(){
           <i data-lucide="upload" class="w-4 h-4"></i> Імпортувати дані з JSON
           <input id="import-input" type="file" accept="application/json" class="hidden">
         </label>
-        <p class="text-xs text-center" style="color:var(--ink-faint)">Дані зберігаються локально у вашому браузері.</p>
+        <p class="text-xs text-center" style="color:var(--ink-faint)">Це резервна копія на випадок втрати даних — синхронізацію між пристроями вона не забезпечує.</p>
       </div>
     </div>
   </div>`;
@@ -777,7 +897,8 @@ function attachEvents(){
           state = Object.assign(defaultState(), parsed, {
             users: Object.assign({me:'Дана',friend:'Вова'}, parsed.users||{}),
             lessons: Array.isArray(parsed.lessons)?parsed.lessons:[],
-            links: Array.isArray(parsed.links)?parsed.links:[]
+            links: Array.isArray(parsed.links)?parsed.links:[],
+            loaded: true
           });
           saveState(); ui.showModal=false; render(); toast('Дані імпортовано успішно');
         }catch(err){
@@ -912,7 +1033,7 @@ function attachEvents(){
 }
 
 /* ============================= INIT ============================= */
-render();
+initSync();
 </script>
 </body>
 </html>
