@@ -325,8 +325,13 @@ function usUkVariants(word){
   return { us: cap(lower), uk: cap(uk) };
 }
 
+function exampleSearchFallbackUrl(word){
+  return `https://www.google.com/search?q=${encodeURIComponent('"'+word+'" example sentence')}`;
+}
+
 async function fetchExampleSentences(word){
-  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim())}`);
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim().toLowerCase())}`);
+  if(res.status===404) return [];
   if(!res.ok) throw new Error('dictionary http '+res.status);
   const data = await res.json();
   const examples = [];
@@ -380,19 +385,29 @@ async function handleToggleExamples(wordId){
     render();
     return;
   }
-  if(current.sentences){
+  if(current.sentences || current.isPhrase){
     ui.wordExamples[wordId] = Object.assign({}, current, {open:true});
     render();
     return;
   }
-  ui.wordExamples[wordId] = { open:true, loading:true, error:null, sentences:null };
+
+  const isPhrase = w.en.trim().includes(' ');
+  if(isPhrase){
+    // The free dictionary lookup only covers single words, not phrases —
+    // skip straight to the "search online" fallback instead of a doomed API call.
+    ui.wordExamples[wordId] = { open:true, loading:false, error:null, sentences:null, isPhrase:true };
+    render();
+    return;
+  }
+
+  ui.wordExamples[wordId] = { open:true, loading:true, error:null, sentences:null, isPhrase:false };
   render();
   try{
     const sentences = await fetchExampleSentences(w.en);
-    ui.wordExamples[wordId] = { open:true, loading:false, error:null, sentences };
+    ui.wordExamples[wordId] = { open:true, loading:false, error:null, sentences, isPhrase:false };
   }catch(e){
     console.error('examples fetch failed', e);
-    ui.wordExamples[wordId] = { open:true, loading:false, error:'Не вдалося завантажити приклади. Спробуйте пізніше.', sentences:[] };
+    ui.wordExamples[wordId] = { open:true, loading:false, error:'Не вдалося завантажити приклади. Спробуйте пізніше.', sentences:[], isPhrase:false };
   }
   render();
 }
@@ -961,9 +976,13 @@ function wordCard(w){
     ${ex.open ? `
     <div class="mt-2.5 pt-2.5 border-t space-y-1.5" style="border-color:var(--border)">
       ${ex.loading ? `<p class="text-xs" style="color:var(--ink-faint)">Шукаю приклади…</p>` :
+        ex.isPhrase ? `<p class="text-xs" style="color:var(--ink-faint)">Приклади речень доступні лише для окремих слів, не для фраз.</p>` :
         ex.error ? `<p class="text-xs" style="color:#E0483E">${escapeHtml(ex.error)}</p>` :
         (ex.sentences&&ex.sentences.length) ? ex.sentences.map(s=>`<p class="text-xs leading-relaxed" style="color:var(--ink-soft)">“${escapeHtml(s)}”</p>`).join('') :
         `<p class="text-xs" style="color:var(--ink-faint)">Прикладів не знайдено для «${escapeHtml(w.en)}».</p>`}
+      <a href="${exampleSearchFallbackUrl(w.en)}" target="_blank" rel="noopener" class="text-xs font-semibold inline-flex items-center gap-1 hover:underline" style="color:var(--blue)">
+        Пошукати приклади в Google <i data-lucide="external-link" class="w-3 h-3"></i>
+      </a>
     </div>`:''}
   </div>`;
 }
