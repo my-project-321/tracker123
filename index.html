@@ -28,6 +28,8 @@
   ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-thumb{background:var(--blue-pastel);border-radius:99px;}
   @keyframes fadeInUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .spin-icon{animation:spin 1s linear infinite;}
   .fade-in{animation:fadeInUp .35s ease both;}
   .card-hover{transition:box-shadow .25s ease, transform .25s ease, border-color .25s ease;}
   .card-hover:hover{box-shadow:0 12px 30px -12px rgba(15,30,80,.18); transform:translateY(-2px); border-color:var(--blue-pastel);}
@@ -50,7 +52,7 @@
 /* ============================= INLINE ICON SET =============================
    Self-contained subset of Lucide icons (MIT licensed, https://lucide.dev),
    embedded directly so the app never depends on an external CDN script. */
-const ICONS = {"languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "calendar": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" />", "settings-2": "<path d=\"M14 17H5\" /> <path d=\"M19 7h-9\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "book-open": "<path d=\"M12 5v16\" /> <path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\" />", "bar-chart-3": "<path d=\"M5 21v-6\" /> <path d=\"M12 21V3\" /> <path d=\"M19 21V9\" />", "link-2": "<path d=\"M9 17H7A5 5 0 0 1 7 7h2\" /> <path d=\"M15 7h2a5 5 0 1 1 0 10h-2\" /> <line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\" />", "plus-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M8 12h8\" /> <path d=\"M12 8v8\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "archive": "<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\" /> <path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\" /> <path d=\"M10 12h4\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "calendar-x": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"m14 13-4 4\" /> <path d=\"m10 13 4 4\" />", "calendar-check": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"m9 15 2 2 4-4\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 6v6l4 2\" />", "flame": "<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\" />", "trash-2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /> <path d=\"m21.854 2.147-10.94 10.939\" />", "heart": "<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\" />", "history": "<path d=\"M15 12h-5\" /> <path d=\"M15 8h-5\" /> <path d=\"M19 17V5a2 2 0 0 0-2-2H4\" /> <path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\" />", "globe-2": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\" /> <path d=\"M2 12h20\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "download": "<path d=\"M12 15V3\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <path d=\"m7 10 5 5 5-5\" />", "upload": "<path d=\"M12 3v12\" /> <path d=\"m17 8-5-5-5 5\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" />", "alert-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" /> <line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" />", "activity": "<path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\" />", "pie-chart": "<path d=\"M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z\" /> <path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "book-marked": "<path d=\"M10 2v8l3-3 3 3V2\" /> <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" />", "clipboard-check": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "arrow-right-left": "<path d=\"m16 3 4 4-4 4\" /> <path d=\"M20 7H4\" /> <path d=\"m8 21-4-4 4-4\" /> <path d=\"M4 17h16\" />", "trophy": "<path d=\"M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2\" /> <path d=\"M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2\" /> <path d=\"M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3\" /> <path d=\"M4 22h16\" /> <path d=\"M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z\" /> <path d=\"M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3\" />", "shuffle": "<path d=\"m18 14 4 4-4 4\" /> <path d=\"m18 2 4 4-4 4\" /> <path d=\"M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22\" /> <path d=\"M2 6h1.972a4 4 0 0 1 3.6 2.2\" /> <path d=\"M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />"}
+const ICONS = {"languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "calendar": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" />", "settings-2": "<path d=\"M14 17H5\" /> <path d=\"M19 7h-9\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "book-open": "<path d=\"M12 5v16\" /> <path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\" />", "bar-chart-3": "<path d=\"M5 21v-6\" /> <path d=\"M12 21V3\" /> <path d=\"M19 21V9\" />", "link-2": "<path d=\"M9 17H7A5 5 0 0 1 7 7h2\" /> <path d=\"M15 7h2a5 5 0 1 1 0 10h-2\" /> <line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\" />", "plus-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M8 12h8\" /> <path d=\"M12 8v8\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "archive": "<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\" /> <path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\" /> <path d=\"M10 12h4\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "calendar-x": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"m14 13-4 4\" /> <path d=\"m10 13 4 4\" />", "calendar-check": "<path d=\"M8 2v3\" /> <path d=\"M16 2v3\" /> <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"m9 15 2 2 4-4\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 6v6l4 2\" />", "flame": "<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\" />", "trash-2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /> <path d=\"m21.854 2.147-10.94 10.939\" />", "heart": "<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\" />", "history": "<path d=\"M15 12h-5\" /> <path d=\"M15 8h-5\" /> <path d=\"M19 17V5a2 2 0 0 0-2-2H4\" /> <path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\" />", "globe-2": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\" /> <path d=\"M2 12h20\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "download": "<path d=\"M12 15V3\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <path d=\"m7 10 5 5 5-5\" />", "upload": "<path d=\"M12 3v12\" /> <path d=\"m17 8-5-5-5 5\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" />", "alert-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" /> <line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" />", "activity": "<path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\" />", "pie-chart": "<path d=\"M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z\" /> <path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "book-marked": "<path d=\"M10 2v8l3-3 3 3V2\" /> <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" />", "clipboard-check": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "arrow-right-left": "<path d=\"m16 3 4 4-4 4\" /> <path d=\"M20 7H4\" /> <path d=\"m8 21-4-4 4-4\" /> <path d=\"M4 17h16\" />", "trophy": "<path d=\"M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2\" /> <path d=\"M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2\" /> <path d=\"M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3\" /> <path d=\"M4 22h16\" /> <path d=\"M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z\" /> <path d=\"M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3\" />", "shuffle": "<path d=\"m18 14 4 4-4 4\" /> <path d=\"m18 2 4 4-4 4\" /> <path d=\"M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22\" /> <path d=\"M2 6h1.972a4 4 0 0 1 3.6 2.2\" /> <path d=\"M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "quote": "<path d=\"M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z\" /> <path d=\"M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z\" />", "loader-circle": "<path d=\"M21 12a9 9 0 1 1-6.219-8.56\" />"}
 ;
 
 function renderIcons(){
@@ -222,6 +224,10 @@ let ui = {
   editSynInputUa: '',
   editSynInputEn: '',
   editErrors: {},
+  dictTranslating: false,
+  dictTranslateError: null,
+  dictUkUsVariant: null, // {uk, us} when EN differs by spelling convention
+  wordExamples: {}, // wordId -> {open, loading, error, sentences}
   quizOpen: false,
   quizStage: 'setup', // 'setup' | 'question' | 'result'
   quizCount: 10,
@@ -282,6 +288,114 @@ function ensureUrl(u){
 
 /* ============================= COMPUTED ============================= */
 function otherProfile(profile){ return profile==='me' ? 'friend' : 'me'; }
+
+/* ============================= TRANSLATE + EXAMPLE SENTENCES =============================
+   Uses Google's free unofficial translate endpoint (no API key — the same trick used by
+   many browser translate widgets) and the free dictionaryapi.dev service for example
+   sentences. Both are third-party free services with no guarantees, so every call is
+   wrapped in try/catch with a friendly fallback if they're unreachable or rate-limited. */
+async function translateText(text, sl, tl){
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('translate http '+res.status);
+  const data = await res.json();
+  return (data[0]||[]).map(chunk=>chunk[0]).join('');
+}
+
+// Curated common US → UK spelling pairs (approximate — covers the frequent cases only)
+const US_UK_PAIRS = [
+  ['color','colour'],['favor','favour'],['honor','honour'],['labor','labour'],['humor','humour'],
+  ['neighbor','neighbour'],['flavor','flavour'],['behavior','behaviour'],['rumor','rumour'],['armor','armour'],
+  ['center','centre'],['theater','theatre'],['meter','metre'],['liter','litre'],['fiber','fibre'],
+  ['organize','organise'],['realize','realise'],['analyze','analyse'],['recognize','recognise'],
+  ['apologize','apologise'],['criticize','criticise'],['memorize','memorise'],['characterize','characterise'],
+  ['defense','defence'],['offense','offence'],['license','licence'],['practice','practise'],
+  ['gray','grey'],['tire','tyre'],['curb','kerb'],['aluminum','aluminium'],['catalog','catalogue'],
+  ['dialog','dialogue'],['analog','analogue'],['jewelry','jewellery'],['traveling','travelling'],
+  ['traveler','traveller'],['canceled','cancelled'],['modeling','modelling'],['mustache','moustache']
+];
+function usUkVariants(word){
+  const lower = (word||'').trim().toLowerCase();
+  const pair = US_UK_PAIRS.find(([us])=> lower===us || lower.endsWith(us));
+  if(!pair) return null;
+  const uk = lower.replace(pair[0], pair[1]);
+  if(uk===lower) return null;
+  // preserve original capitalisation of the first letter
+  const cap = (s)=> word && word[0]===word[0].toUpperCase() ? s[0].toUpperCase()+s.slice(1) : s;
+  return { us: cap(lower), uk: cap(uk) };
+}
+
+async function fetchExampleSentences(word){
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim())}`);
+  if(!res.ok) throw new Error('dictionary http '+res.status);
+  const data = await res.json();
+  const examples = [];
+  (data||[]).forEach(entry=>{
+    (entry.meanings||[]).forEach(m=>{
+      (m.definitions||[]).forEach(d=>{
+        if(d.example && !examples.includes(d.example)) examples.push(d.example);
+      });
+    });
+  });
+  return examples.slice(0,5);
+}
+
+async function handleTranslateWord(){
+  const ua = (ui.dictWordUa||'').trim();
+  const en = (ui.dictWordEn||'').trim();
+  if(!ua && !en){ toast('Спочатку введіть слово'); return; }
+  ui.dictTranslating = true;
+  ui.dictTranslateError = null;
+  ui.dictUkUsVariant = null;
+  render();
+  try{
+    if(en && !ua){
+      ui.dictWordUa = await translateText(en, 'en', 'uk');
+    } else {
+      const translated = await translateText(ua, 'uk', 'en');
+      ui.dictWordEn = translated;
+      const variant = usUkVariants(translated);
+      if(variant) ui.dictUkUsVariant = variant;
+    }
+  }catch(e){
+    console.error('translate failed', e);
+    ui.dictTranslateError = 'Не вдалося перекласти — спробуйте ще раз або введіть переклад вручну.';
+  }
+  ui.dictTranslating = false;
+  render();
+}
+
+function handleUseSpellingVariant(variant){
+  if(!ui.dictUkUsVariant) return;
+  ui.dictWordEn = variant==='uk' ? ui.dictUkUsVariant.uk : ui.dictUkUsVariant.us;
+  render();
+}
+
+async function handleToggleExamples(wordId){
+  const w = state.words.find(x=>x.id===wordId);
+  if(!w) return;
+  const current = ui.wordExamples[wordId] || {};
+  if(current.open){
+    ui.wordExamples[wordId] = Object.assign({}, current, {open:false});
+    render();
+    return;
+  }
+  if(current.sentences){
+    ui.wordExamples[wordId] = Object.assign({}, current, {open:true});
+    render();
+    return;
+  }
+  ui.wordExamples[wordId] = { open:true, loading:true, error:null, sentences:null };
+  render();
+  try{
+    const sentences = await fetchExampleSentences(w.en);
+    ui.wordExamples[wordId] = { open:true, loading:false, error:null, sentences };
+  }catch(e){
+    console.error('examples fetch failed', e);
+    ui.wordExamples[wordId] = { open:true, loading:false, error:'Не вдалося завантажити приклади. Спробуйте пізніше.', sentences:[] };
+  }
+  render();
+}
 
 function getProfileLessons(profile){
   return state.lessons.filter(l=>l.owner===profile).sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt-a.createdAt);
@@ -757,18 +871,32 @@ function renderDictionaryMain(profile, words){
       <form id="word-form" class="space-y-4" novalidate>
         <div class="grid sm:grid-cols-2 gap-4">
           <div>
-            <label class="text-xs font-semibold" style="color:var(--ink-soft)">Українською</label>
-            <input type="text" name="ua" value="${escapeHtml(ui.dictWordUa)}" placeholder="напр. натхнення"
-              class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="${errBorder('ua')}">
-            ${err.ua? fieldErr('Вкажіть слово українською'):''}
-          </div>
-          <div>
             <label class="text-xs font-semibold" style="color:var(--ink-soft)">Англійською</label>
             <input type="text" name="en" value="${escapeHtml(ui.dictWordEn)}" placeholder="напр. inspiration"
               class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="${errBorder('en')}">
             ${err.en? fieldErr('Вкажіть слово англійською'):''}
           </div>
+          <div>
+            <label class="text-xs font-semibold" style="color:var(--ink-soft)">Українською</label>
+            <input type="text" name="ua" value="${escapeHtml(ui.dictWordUa)}" placeholder="напр. натхнення"
+              class="w-full mt-1.5 px-4 py-2.5 rounded-2xl border bg-white text-sm" style="${errBorder('ua')}">
+            ${err.ua? fieldErr('Вкажіть слово українською'):''}
+          </div>
         </div>
+
+        <button type="button" data-action="translate-word" ${ui.dictTranslating?'disabled':''}
+          class="btn-press flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold border w-full sm:w-auto" style="border-color:var(--border)">
+          <i data-lucide="${ui.dictTranslating?'loader-circle':'languages'}" class="w-4 h-4 ${ui.dictTranslating?'spin-icon':''}" style="color:var(--blue)"></i>
+          ${ui.dictTranslating? 'Перекладаю…':'Перекласти'}
+        </button>
+        ${ui.dictTranslateError? `<p class="text-xs" style="color:#E0483E">${escapeHtml(ui.dictTranslateError)}</p>`:''}
+        ${ui.dictUkUsVariant? `
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs" style="color:var(--ink-faint)">Варіант написання:</span>
+          <button type="button" data-action="use-spelling-variant" data-variant="uk" class="chip btn-press px-3 py-1.5 rounded-full text-xs font-semibold border" style="border-color:var(--border)">🇬🇧 ${escapeHtml(ui.dictUkUsVariant.uk)}</button>
+          <button type="button" data-action="use-spelling-variant" data-variant="us" class="chip btn-press px-3 py-1.5 rounded-full text-xs font-semibold border" style="border-color:var(--border)">🇺🇸 ${escapeHtml(ui.dictUkUsVariant.us)}</button>
+        </div>`:''}
+
         <button type="submit" class="btn-press w-full sm:w-auto px-6 py-3 rounded-2xl font-semibold text-sm text-white flex items-center justify-center gap-2" style="background:var(--blue)">
           <i data-lucide="plus" class="w-4 h-4"></i> Додати слово
         </button>
@@ -806,14 +934,18 @@ function wordCard(w){
   if(ui.editingWordId===w.id) return wordEditCard(w);
   const uaSyn = w.uaSynonyms||[];
   const enSyn = w.enSynonyms||[];
+  const ex = ui.wordExamples[w.id] || {};
   return `
   <div class="rounded-2xl border p-4 card-hover fade-in" style="border-color:var(--border)">
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <div class="font-display font-bold text-[15px] truncate">${escapeHtml(w.ua)}</div>
-        <div class="text-sm truncate" style="color:var(--ink-soft)">${escapeHtml(w.en)}</div>
+        <div class="font-display font-bold text-[15px] truncate">${escapeHtml(w.en)}</div>
+        <div class="text-sm truncate" style="color:var(--ink-soft)">${escapeHtml(w.ua)}</div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
+        <button data-action="toggle-examples" data-id="${w.id}" class="btn-press w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-50" title="Приклади речень">
+          <i data-lucide="${ex.loading?'loader-circle':'quote'}" class="w-3.5 h-3.5 ${ex.loading?'spin-icon':''}" style="color:${ex.open?'var(--blue)':'var(--ink-faint)'}"></i>
+        </button>
         <button data-action="edit-word" data-id="${w.id}" class="btn-press w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-50">
           <i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--ink-faint)"></i>
         </button>
@@ -824,7 +956,14 @@ function wordCard(w){
     </div>
     ${(uaSyn.length||enSyn.length) ? `
     <div class="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t" style="border-color:var(--border)">
-      ${uaSyn.map(synChip).join('')}${enSyn.map(synChip).join('')}
+      ${enSyn.map(synChip).join('')}${uaSyn.map(synChip).join('')}
+    </div>`:''}
+    ${ex.open ? `
+    <div class="mt-2.5 pt-2.5 border-t space-y-1.5" style="border-color:var(--border)">
+      ${ex.loading ? `<p class="text-xs" style="color:var(--ink-faint)">Шукаю приклади…</p>` :
+        ex.error ? `<p class="text-xs" style="color:#E0483E">${escapeHtml(ex.error)}</p>` :
+        (ex.sentences&&ex.sentences.length) ? ex.sentences.map(s=>`<p class="text-xs leading-relaxed" style="color:var(--ink-soft)">“${escapeHtml(s)}”</p>`).join('') :
+        `<p class="text-xs" style="color:var(--ink-faint)">Прикладів не знайдено для «${escapeHtml(w.en)}».</p>`}
     </div>`:''}
   </div>`;
 }
@@ -837,29 +976,12 @@ function wordEditCard(w){
     <form id="word-edit-form" data-id="${w.id}" class="space-y-3">
       <div class="grid sm:grid-cols-2 gap-3">
         <div>
-          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Українською</label>
-          <input type="text" name="ua" value="${escapeHtml(ui.editUa)}" class="w-full mt-1 px-3 py-2 rounded-xl border bg-white text-sm" style="${errBorder('ua')}">
-        </div>
-        <div>
           <label class="text-xs font-semibold" style="color:var(--ink-soft)">Англійською</label>
           <input type="text" name="en" value="${escapeHtml(ui.editEn)}" class="w-full mt-1 px-3 py-2 rounded-xl border bg-white text-sm" style="${errBorder('en')}">
         </div>
-      </div>
-
-      <div>
-        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Синоніми українською</label>
-        <div class="flex flex-wrap gap-1.5 mt-1.5 mb-1.5">
-          ${ui.editUaSynonyms.map((s,i)=>`
-            <span class="text-xs font-medium pl-2.5 pr-1.5 py-1 rounded-full flex items-center gap-1 bg-white" style="border:1px solid var(--border)">
-              ${escapeHtml(s)}
-              <button type="button" data-action="remove-edit-synonym-ua" data-index="${i}" class="w-4 h-4 rounded-full flex items-center justify-center hover:bg-gray-100">
-                <i data-lucide="x" class="w-3 h-3"></i>
-              </button>
-            </span>`).join('')}
-        </div>
-        <div class="flex gap-2">
-          <input type="text" name="syn-ua-input" value="${escapeHtml(ui.editSynInputUa)}" placeholder="Додати синонім..." class="flex-1 px-3 py-2 rounded-xl border bg-white text-sm" style="border-color:var(--border)">
-          <button type="button" data-action="add-edit-synonym-ua" class="btn-press px-3 rounded-xl border text-sm font-semibold" style="border-color:var(--border)">+</button>
+        <div>
+          <label class="text-xs font-semibold" style="color:var(--ink-soft)">Українською</label>
+          <input type="text" name="ua" value="${escapeHtml(ui.editUa)}" class="w-full mt-1 px-3 py-2 rounded-xl border bg-white text-sm" style="${errBorder('ua')}">
         </div>
       </div>
 
@@ -877,6 +999,23 @@ function wordEditCard(w){
         <div class="flex gap-2">
           <input type="text" name="syn-en-input" value="${escapeHtml(ui.editSynInputEn)}" placeholder="Додати синонім..." class="flex-1 px-3 py-2 rounded-xl border bg-white text-sm" style="border-color:var(--border)">
           <button type="button" data-action="add-edit-synonym-en" class="btn-press px-3 rounded-xl border text-sm font-semibold" style="border-color:var(--border)">+</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold" style="color:var(--ink-soft)">Синоніми українською</label>
+        <div class="flex flex-wrap gap-1.5 mt-1.5 mb-1.5">
+          ${ui.editUaSynonyms.map((s,i)=>`
+            <span class="text-xs font-medium pl-2.5 pr-1.5 py-1 rounded-full flex items-center gap-1 bg-white" style="border:1px solid var(--border)">
+              ${escapeHtml(s)}
+              <button type="button" data-action="remove-edit-synonym-ua" data-index="${i}" class="w-4 h-4 rounded-full flex items-center justify-center hover:bg-gray-100">
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </span>`).join('')}
+        </div>
+        <div class="flex gap-2">
+          <input type="text" name="syn-ua-input" value="${escapeHtml(ui.editSynInputUa)}" placeholder="Додати синонім..." class="flex-1 px-3 py-2 rounded-xl border bg-white text-sm" style="border-color:var(--border)">
+          <button type="button" data-action="add-edit-synonym-ua" class="btn-press px-3 rounded-xl border text-sm font-semibold" style="border-color:var(--border)">+</button>
         </div>
       </div>
 
@@ -1207,6 +1346,15 @@ function attachEvents(){
           }
           break;
         }
+        case 'translate-word':
+          handleTranslateWord();
+          break;
+        case 'use-spelling-variant':
+          handleUseSpellingVariant(el.dataset.variant);
+          break;
+        case 'toggle-examples':
+          handleToggleExamples(el.dataset.id);
+          break;
         case 'delete-word':
           if(confirm('Видалити це слово зі словника?')){
             state.words = state.words.filter(x=>x.id!==el.dataset.id);
